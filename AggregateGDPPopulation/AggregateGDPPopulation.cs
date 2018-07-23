@@ -3,22 +3,40 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace AggregateGDPPopulation
 {
     public class Class1
     {
-        public static string Readfile(string filepath)
+        public static async Task<string> ReadfileAsync(string filepath)
         {
-            string data = File.ReadAllText(filepath);
+            //string data = File.ReadAllText(filepath);
+            string data;
+            using (StreamReader fileRead = new StreamReader(filepath))
+            {
+                data = await fileRead.ReadToEndAsync();
+            }
             return data;
         }
-        public static void Main()
+        public static async void WriteFileAsync(string outputpath, string result)
+        {
+            using (StreamWriter fileWrite = new StreamWriter(outputpath))
+            {
+                await fileWrite.WriteAsync(result);
+            }
+        }
+        public static async Task Main()
         {
             string FilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
             string jsonPath = @"../../../../AggregateGDPPopulation/data/continent.json";
-            string Filedata = Readfile(FilePath);
-            string json = Readfile(jsonPath);
+            string outputPath = @"../../../../AggregateGDPPopulation.Tests/output.json";
+            //string Filedata = ReadfileAsync(FilePath);
+            Task<string> Filedatatask = ReadfileAsync(FilePath);
+            //string json = ReadfileAsync(jsonPath);
+            Task<string> jsontask = ReadfileAsync(jsonPath);
+            string json = await jsontask;
+            string Filedata = await Filedatatask;
             Dictionary<string, string> jsonData = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
             var dataarray = Filedata.Replace("\"", "").Split('\n');
             Dictionary<string, Dictionary<string, float>> finaljson = new Dictionary<string, Dictionary<string, float>>();
@@ -46,7 +64,8 @@ namespace AggregateGDPPopulation
                 }
             }
             string result = JsonConvert.SerializeObject(finaljson, Formatting.Indented);
-            File.WriteAllText(@"../../../../AggregateGDPPopulation.Tests/output.json", result);
+            WriteFileAsync(outputPath, result);
+            //File.WriteAllText(@"../../../../AggregateGDPPopulation.Tests/output.json", result);
         }
     }
 }
