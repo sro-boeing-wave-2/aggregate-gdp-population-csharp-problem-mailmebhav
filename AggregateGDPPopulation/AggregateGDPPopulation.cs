@@ -15,8 +15,8 @@ namespace AggregateGDPPopulation
         }
         public static void Main()
         {
-            string FilePath = @"..\..\..\..\AggregateGDPPopulation\data\datafile.csv";
-            string jsonPath = @"..\..\..\..\AggregateGDPPopulation\data\continent.json";
+            string FilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
+            string jsonPath = @"../../../../AggregateGDPPopulation/data/continent.json";
             string Filedata = Readfile(FilePath);
             string json = Readfile(jsonPath);
             Dictionary<string, string> jsonData = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
@@ -46,7 +46,7 @@ namespace AggregateGDPPopulation
                 }
             }
             string result = JsonConvert.SerializeObject(finaljson, Formatting.Indented);
-            File.WriteAllText(@"..\..\..\..\AggregateGDPPopulation.Tests\output.json", result);
+            File.WriteAllText(@"../../../../AggregateGDPPopulation.Tests/output.json", result);
         }
     }
 }
