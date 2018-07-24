@@ -9,6 +9,7 @@ namespace AggregateGDPPopulation
 {
     public class Class1
     {
+        //Function to read file Asynchronously
         public static async Task<string> ReadfileAsync(string filepath)
         {
             string data;
@@ -18,6 +19,7 @@ namespace AggregateGDPPopulation
             }
             return data;
         }
+        //Function to write to File Asynchronously
         public static async void WriteFileAsync(string outputpath, string result)
         {
             using (StreamWriter fileWrite = new StreamWriter(outputpath))
@@ -25,6 +27,7 @@ namespace AggregateGDPPopulation
                 await fileWrite.WriteAsync(result);
             }
         }
+        //Main Function for the Program
         public static async Task Main()
         {
             string FilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
@@ -34,8 +37,8 @@ namespace AggregateGDPPopulation
             Task<string> jsontask = ReadfileAsync(jsonPath);
             string json = await jsontask;
             string Filedata = await Filedatatask;
-            Dictionary<string, string> jsonData = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-            var dataarray = Filedata.Replace("\"", "").Split('\n');
+            Dictionary<string, string> jsonData = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);      //  Converting the json string to Dictionary. 
+            var dataarray = Filedata.Replace("\"", "").Split('\n');                                                     //  Removing " from the datafile read, and splitting the string to array by \n character.
             Dictionary<string, Dictionary<string, float>> finaljson = new Dictionary<string, Dictionary<string, float>>();
             for (int i = 1; i < dataarray.Length; i++)
             {
