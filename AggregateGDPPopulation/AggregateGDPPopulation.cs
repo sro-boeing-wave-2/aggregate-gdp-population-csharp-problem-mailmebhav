@@ -11,7 +11,6 @@ namespace AggregateGDPPopulation
     {
         public static async Task<string> ReadfileAsync(string filepath)
         {
-            //string data = File.ReadAllText(filepath);
             string data;
             using (StreamReader fileRead = new StreamReader(filepath))
             {
@@ -31,9 +30,7 @@ namespace AggregateGDPPopulation
             string FilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
             string jsonPath = @"../../../../AggregateGDPPopulation/data/continent.json";
             string outputPath = @"../../../../AggregateGDPPopulation.Tests/output.json";
-            //string Filedata = ReadfileAsync(FilePath);
             Task<string> Filedatatask = ReadfileAsync(FilePath);
-            //string json = ReadfileAsync(jsonPath);
             Task<string> jsontask = ReadfileAsync(jsonPath);
             string json = await jsontask;
             string Filedata = await Filedatatask;
@@ -65,7 +62,6 @@ namespace AggregateGDPPopulation
             }
             string result = JsonConvert.SerializeObject(finaljson, Formatting.Indented);
             WriteFileAsync(outputPath, result);
-            //File.WriteAllText(@"../../../../AggregateGDPPopulation.Tests/output.json", result);
         }
     }
 }
