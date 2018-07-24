@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AggregateGDPPopulation
 {
-    public class Class1
+    public class GDPAggregate
     {
         //Function to read file Asynchronously
         public static async Task<string> ReadfileAsync(string filepath)
@@ -26,44 +26,82 @@ namespace AggregateGDPPopulation
                 await fileWrite.WriteAsync(result);
             }
         }
-        //Main Function for the Program
-        public static async Task Main()
+        //Adding values of GDP and Population of a Country to the existing continent data in finaljson.
+        public static void AddExistingContinentData(Dictionary<string, Dictionary<string, float>> finaljson, string continent, float gdp, float population)
         {
-            string FilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
-            string jsonPath = @"../../../../AggregateGDPPopulation/data/continent.json";
-            string outputPath = @"../../../../AggregateGDPPopulation.Tests/output.json";
-            Task<string> Filedatatask = ReadfileAsync(FilePath);
-            Task<string> jsontask = ReadfileAsync(jsonPath);
-            string json = await jsontask;
-            string Filedata = await Filedatatask;
-            Dictionary<string, string> jsonData = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);      //  Converting the json string to Dictionary. 
-            var dataarray = Filedata.Replace("\"", "").Split('\n');                                                     //  Removing " from the datafile read, and splitting the string to array by \n character.
-            Dictionary<string, Dictionary<string, float>> finaljson = new Dictionary<string, Dictionary<string, float>>();
-            for (int i = 1; i < dataarray.Length; i++)
+            finaljson[continent]["GDP_2012"] += gdp;
+            finaljson[continent]["POPULATION_2012"] += population;
+        }
+        //Adding values of GDP and Population of a Country to the New continent data in finaljson.
+        public static void AddNewContinentData(Dictionary<string, Dictionary<string, float>> finaljson, string continent, float gdp, float population)
+        {
+            Dictionary<string, float> CountryDetails = new Dictionary<string, float>();
+            CountryDetails.Add("GDP_2012", gdp);
+            CountryDetails.Add("POPULATION_2012", population);
+            finaljson.Add(continent, CountryDetails);
+        }
+        //This function is used for testing to check the values of gdp and population by continent.
+        public static bool AggregatedGDP(string expectedOutput, string originalOutput)
+        {
+            Dictionary<string, Dictionary<string, float>> expectedOutputDictionary = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, float>>>(expectedOutput);
+            Dictionary<string, Dictionary<string, float>> OriginalOutputDictionary = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, float>>>(originalOutput);
+            bool errorMatching = false;
+            foreach (string continent in expectedOutputDictionary.Keys)
             {
-                float gdp = float.Parse(dataarray[i].Split(',')[10]);
-                float population = float.Parse(dataarray[i].Split(',')[4]);
-                string country = dataarray[i].Split(',')[0];
-                if(country == "European Union")
+                if (expectedOutputDictionary[continent]["GDP_2012"] == OriginalOutputDictionary[continent]["GDP_2012"])
                 {
-                    break;
-                }
-                string continent = jsonData[country];
-                Dictionary<string, float> CountryDetails = new Dictionary<string, float>();
-                CountryDetails.Add("GDP_2012", gdp);
-                CountryDetails.Add("POPULATION_2012", population);
-                if (finaljson.ContainsKey(continent))
-                {
-                    finaljson[continent]["GDP_2012"] += gdp;
-                    finaljson[continent]["POPULATION_2012"] += population;
+                    if (expectedOutputDictionary[continent]["POPULATION_2012"] != expectedOutputDictionary[continent]["POPULATION_2012"])
+                    {
+                        errorMatching = true;
+                        break;
+                    }
                 }
                 else
                 {
-                    finaljson.Add(continent, CountryDetails);
+                    errorMatching = true;
+                    break;
                 }
             }
-            string result = JsonConvert.SerializeObject(finaljson, Formatting.Indented);
-            WriteFileAsync(outputPath, result);
+            if (errorMatching)
+            {
+                return false;
+            }
+            return true;
+        }
+        //Main Function for the Program
+        public static async Task Main()
+        {
+            string InputFilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
+            string CountryContinentMapperPath = @"../../../../AggregateGDPPopulation/data/continent.json";
+            string outputPath = @"../../../../AggregateGDPPopulation.Tests/output.json";
+            Task<string> ReadInputFileTask = ReadfileAsync(InputFilePath);
+            Task<string> ReadMapperTask = ReadfileAsync(CountryContinentMapperPath);
+            string Mapper = await ReadMapperTask;
+            Dictionary<string, string> MapperData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Mapper);      //  Converting the json string to Dictionary. 
+            string InputFiledata = await ReadInputFileTask;
+            var dataarray = InputFiledata.Replace("\"", "").Split('\n');                                                     //  Removing " from the datafile read, and splitting the string to array by \n character.
+            Dictionary<string, Dictionary<string, float>> Resultjson = new Dictionary<string, Dictionary<string, float>>();
+            for (int i = 1; i < dataarray.Length; i++)
+            {
+                float gdpValue = float.Parse(dataarray[i].Split(',')[10]);
+                float populationValue = float.Parse(dataarray[i].Split(',')[4]);
+                string country = dataarray[i].Split(',')[0];
+                if (country == "European Union")
+                {
+                    break;
+                }
+                string continent = MapperData[country];
+                if (Resultjson.ContainsKey(continent))
+                {
+                    AddExistingContinentData(Resultjson, continent, gdpValue, populationValue);
+                }
+                else
+                {
+                    AddNewContinentData(Resultjson, continent, gdpValue, populationValue);
+                }
+            }
+            string resultString = JsonConvert.SerializeObject(Resultjson, Formatting.Indented);
+            WriteFileAsync(outputPath, resultString);
         }
     }
 }

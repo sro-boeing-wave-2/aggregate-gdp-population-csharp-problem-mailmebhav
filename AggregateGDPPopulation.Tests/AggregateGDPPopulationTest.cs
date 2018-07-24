@@ -4,17 +4,17 @@ using Xunit;
 
 namespace AggregateGDPPopulation.Tests
 {
-    public class UnitTest1
+    public class AggregateGDPPopulationTest
     {
         [Fact]
-        public async void Test1()
+        public async void GDPPopulationbyContinentTest()
         {
-            await Class1.Main();
+            await GDPAggregate.Main();
             string expectedOutputPath = @"../../../../AggregateGDPPopulation.Tests/expected-output.json";
             string outputPath = @"../../../../AggregateGDPPopulation.Tests/output.json";
-            string expectedResult = await Class1.ReadfileAsync(expectedOutputPath);
-            string output = await Class1.ReadfileAsync(outputPath);
-            Assert.Equal(expectedResult, output);
+            string expectedResult = await GDPAggregate.ReadfileAsync(expectedOutputPath);
+            string output = await GDPAggregate.ReadfileAsync(outputPath);
+            Assert.True(GDPAggregate.AggregatedGDP(expectedResult, output)); //AggregatedGDP function is used to match the values of expected output and original output and returns boolean value if test fails or passes.
         }
     }
 }
