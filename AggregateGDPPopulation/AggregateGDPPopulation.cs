@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AggregateGDPPopulation
 {
-    public class GDPAggregate
+    public class FileOperations
     {
         //Function to read file Asynchronously
         public static async Task<string> ReadfileAsync(string filepath)
@@ -26,26 +26,15 @@ namespace AggregateGDPPopulation
                 await fileWrite.WriteAsync(result);
             }
         }
-        //Adding values of GDP and Population of a Country to the existing continent data in finaljson.
-        public static void AddExistingContinentData(Dictionary<string, Dictionary<string, float>> finaljson, string continent, float gdp, float population)
-        {
-            finaljson[continent]["GDP_2012"] += gdp;
-            finaljson[continent]["POPULATION_2012"] += population;
-        }
-        //Adding values of GDP and Population of a Country to the New continent data in finaljson.
-        public static void AddNewContinentData(Dictionary<string, Dictionary<string, float>> finaljson, string continent, float gdp, float population)
-        {
-            Dictionary<string, float> CountryDetails = new Dictionary<string, float>();
-            CountryDetails.Add("GDP_2012", gdp);
-            CountryDetails.Add("POPULATION_2012", population);
-            finaljson.Add(continent, CountryDetails);
-        }
+    }
+    public class GDPAggregateTest
+    {
         //This function is used for testing to check the values of gdp and population by continent.
         public static bool AggregatedGDP(string expectedOutput, string originalOutput)
         {
+            bool errorMatching = false;
             Dictionary<string, Dictionary<string, float>> expectedOutputDictionary = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, float>>>(expectedOutput);
             Dictionary<string, Dictionary<string, float>> OriginalOutputDictionary = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, float>>>(originalOutput);
-            bool errorMatching = false;
             foreach (string continent in expectedOutputDictionary.Keys)
             {
                 if (expectedOutputDictionary[continent]["GDP_2012"] == OriginalOutputDictionary[continent]["GDP_2012"])
@@ -68,14 +57,32 @@ namespace AggregateGDPPopulation
             }
             return true;
         }
+    }
+
+    public class GDPAggregate
+    {
+        //Adding values of GDP and Population of a Country to the existing continent data in finaljson.
+        public static void AddExistingContinentData(Dictionary<string, Dictionary<string, float>> finaljson, string continent, float gdp, float population)
+        {
+            finaljson[continent]["GDP_2012"] += gdp;
+            finaljson[continent]["POPULATION_2012"] += population;
+        }
+        //Adding values of GDP and Population of a Country to the New continent data in finaljson.
+        public static void AddNewContinentData(Dictionary<string, Dictionary<string, float>> finaljson, string continent, float gdp, float population)
+        {
+            Dictionary<string, float> CountryDetails = new Dictionary<string, float>();
+            CountryDetails.Add("GDP_2012", gdp);
+            CountryDetails.Add("POPULATION_2012", population);
+            finaljson.Add(continent, CountryDetails);
+        }
         //Main Function for the Program
         public static async Task Main()
         {
             string InputFilePath = @"../../../../AggregateGDPPopulation/data/datafile.csv";
             string CountryContinentMapperPath = @"../../../../AggregateGDPPopulation/data/continent.json";
             string outputPath = @"../../../../AggregateGDPPopulation.Tests/output.json";
-            Task<string> ReadInputFileTask = ReadfileAsync(InputFilePath);
-            Task<string> ReadMapperTask = ReadfileAsync(CountryContinentMapperPath);
+            Task<string> ReadInputFileTask = FileOperations.ReadfileAsync(InputFilePath);
+            Task<string> ReadMapperTask = FileOperations.ReadfileAsync(CountryContinentMapperPath);
             string Mapper = await ReadMapperTask;
             Dictionary<string, string> MapperData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Mapper);      //  Converting the json string to Dictionary. 
             string InputFiledata = await ReadInputFileTask;
@@ -101,7 +108,7 @@ namespace AggregateGDPPopulation
                 }
             }
             string resultString = JsonConvert.SerializeObject(Resultjson, Formatting.Indented);
-            WriteFileAsync(outputPath, resultString);
+            FileOperations.WriteFileAsync(outputPath, resultString);
         }
     }
 }
